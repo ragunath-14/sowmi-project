@@ -4,10 +4,13 @@ import express from "express";
 import cors from "cors";
 import analyseStock from './routes/analyseStock.js';
 import authRouter from './routes/auth/authRouter.js'
+import { startCronJobs } from './cron.js';
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+startCronJobs();
 
 app.use('/analyze',analyseStock);
 app.use('/auth',authRouter)
