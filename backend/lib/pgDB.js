@@ -3,13 +3,13 @@ const { Pool } = pkg;
 
 let pool;
 
+const isLocalDb = /localhost|127\.0\.0\.1/.test(process.env.DATABASE_URL || "");
+
 export const connectToDatabase = () => {
   if (!pool) {
     pool = new Pool({
       connectionString: process.env.DATABASE_URL,
-      ssl: {
-        rejectUnauthorized: false
-      },
+      ssl: isLocalDb ? false : { rejectUnauthorized: false },
       family: 4
     });
 

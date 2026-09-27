@@ -92,7 +92,7 @@ const Signin = () => {
         <div className="row">
           <div className="card bg-dark shadow">
             <h2 className="text-center text-light p-3">
-              AI Stock Analyser
+              Intelligent Stock Market Forecasting System
             </h2>
           </div>
         </div>

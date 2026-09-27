@@ -51,12 +51,12 @@ export default function Navbar({ username = "User" }) {
                 <Link to="/home" className="navbar-brand d-flex align-items-center gap-2">
                   <img
                     src="/images/logo.jpeg"
-                    alt="AI Stock Analyzer Logo"
+                    alt="Intelligent Stock Market Forecasting System Logo"
                     width="42"
                     height="42"
                     className="rounded"
                   />
-                  <span className="fw-bold fs-5">AI Stock Analyzer</span>
+                  <span className="fw-bold fs-5">Intelligent Stock Market Forecasting System</span>
                 </Link>
     
                 <button

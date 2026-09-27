@@ -7,8 +7,8 @@ const StoreContext = createContext(null);
 
 export const StoreProvider = ({ children }) => {
   // Base URL for all backend API calls.
-  // Change this single value to switch between environments.
-  const backendUrl = "https://ai-stock-analyser-2xoy.onrender.com";
+  // Override with VITE_BACKEND_URL (e.g. in .env) for local development.
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://ai-stock-analyser-2xoy.onrender.com";
 
   // JWT token — initialised from localStorage so it survives page reloads.
   const [token, setTokenState] = useState(

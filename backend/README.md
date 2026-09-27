@@ -1,4 +1,4 @@
-# AI Stock Analyzer and Market News Intelligence
+# Intelligent Stock Market Forecasting System
 
 An end-to-end AI-powered stock analysis system that allows users to input a stock symbol and a natural-language question, then returns structured company data, computed analytics, and AI-generated reasoning through a clean and responsive UI.
 

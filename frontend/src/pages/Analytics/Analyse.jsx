@@ -27,6 +27,38 @@ const Analyse = () => {
     .replace(/^./, str => str.toUpperCase());
 }
 
+  // The AI doesn't always return an object of fields for a section — it often
+  // returns a plain narrative string instead. Render either shape.
+  function renderSection(value) {
+    if (value === null || value === undefined) return null;
+    if (typeof value !== "object") {
+      return <p className="mb-0">{String(value)}</p>;
+    }
+    return Object.entries(value).map(([key, val]) => {
+      if (typeof val === "object" && val !== null) {
+        return (
+          <div key={key} className="mb-3">
+            <h6 className="fw-semibold">{formatKey(key)}</h6>
+            <ul className="mb-0">
+              {Object.entries(val).map(([k, v]) => (
+                <li key={k}>
+                  <strong>{formatKey(k)}:</strong>{" "}
+                  {typeof v === "number" ? v.toFixed(4) : String(v)}
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      }
+      return (
+        <p key={key} className="mb-1">
+          <strong>{formatKey(key)}:</strong>{" "}
+          {typeof val === "number" ? val.toLocaleString() : String(val)}
+        </p>
+      );
+    });
+  }
+
         const handleSubmit = async (e) => {
           e.preventDefault();
 
@@ -52,6 +84,8 @@ const Analyse = () => {
               setProfile(
                 parsed["Company Profile"] ||
                 parsed["Companies Profile"] ||
+                parsed.CompanyProfile ||
+                parsed.CompaniesProfile ||
                 {}
               );
               setAnalytics(parsed.Analytics || {});
@@ -74,12 +108,12 @@ const Analyse = () => {
             <Link to="/home" className="navbar-brand d-flex align-items-center gap-2">
               <img
                 src="/images/logo.jpeg"
-                alt="AI Stock Analyzer Logo"
+                alt="Intelligent Stock Market Forecasting System Logo"
                 width="42"
                 height="42"
                 className="rounded"
               />
-              <span className="fw-bold fs-5">AI Stock Analyzer</span>
+              <span className="fw-bold fs-5">Intelligent Stock Market Forecasting System</span>
             </Link>
 
             <button
@@ -229,13 +263,7 @@ const Analyse = () => {
       <div className="card shadow-sm mb-4">
         <div className="card-header fw-bold">Company Profile</div>
         <div className="card-body">
-          {profile &&
-            Object.entries(profile).map(([key, value]) => (
-              <p key={key} className="mb-1">
-                <strong>{formatKey(key)}:</strong>{" "}
-                {typeof value === "number" ? value.toLocaleString() : value}
-              </p>
-            ))}
+          {renderSection(profile)}
         </div>
       </div>
 
@@ -243,29 +271,7 @@ const Analyse = () => {
       <div className="card shadow-sm mb-4">
         <div className="card-header fw-bold">Analytics</div>
         <div className="card-body">
-          {analytics &&
-            Object.entries(analytics).map(([key, value]) => {
-              if (typeof value === "object" && value !== null) {
-                return (
-                  <div key={key} className="mb-3">
-                    <h6 className="fw-semibold">{formatKey(key)}</h6>
-                    <ul className="mb-0">
-                      {Object.entries(value).map(([k, v]) => (
-                        <li key={k}>
-                          <strong>{formatKey(k)}:</strong>{" "}
-                          {typeof v === "number" ? v.toFixed(4) : v}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                );
-              }
-              return (
-                <p key={key}>
-                  <strong>{formatKey(key)}:</strong> {value}
-                </p>
-              );
-            })}
+          {renderSection(analytics)}
         </div>
       </div>
 
@@ -275,7 +281,11 @@ const Analyse = () => {
           AI Recommendation
         </div>
         <div className="card-body">
+          {answer && typeof answer !== "object" && (
+            <p className="mb-0">{String(answer)}</p>
+          )}
           {answer &&
+            typeof answer === "object" &&
             Object.entries(answer).map(([key, value]) => {
               if (typeof value === "object" && value !== null) {
                 return (

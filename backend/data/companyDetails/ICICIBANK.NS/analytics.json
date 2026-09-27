@@ -1,0 +1,17 @@
+{
+  "symbol": "ICICIBANK.NS",
+  "period": "1Y",
+  "dataPoints": 252,
+  "dailyVolatility": 0.0121,
+  "annualizedVolatility": 0.1918,
+  "return1YPercent": -3.56,
+  "trend": {
+    "direction": "Flat",
+    "return1Y": -0.0356
+  },
+  "interpretation": {
+    "volatility": "Moderate volatility",
+    "performance": "Flat/slight decline"
+  },
+  "computedAt": "2026-09-27T07:12:49.720Z"
+}

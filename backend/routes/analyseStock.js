@@ -87,9 +87,7 @@ router.post("/analyze-stock", verifyToken, async (req, res) => {
     let parsedAnswer;
     try{
       let cleaned=reply.trim();
-      if(cleaned.startsWith("```")){
-        cleaned = cleaned.slice(3).trim();  // Remove opening ```
-      }
+      cleaned = cleaned.replace(/^```[a-zA-Z]*\n?/, "").trim();
       if (cleaned.endsWith("```")) {
         cleaned = cleaned.slice(0, -3).trim();  // Remove closing ```
   }
@@ -99,7 +97,7 @@ router.post("/analyze-stock", verifyToken, async (req, res) => {
   console.log(" Successfully parsed AI response as JSON");
     }
     catch(err){
-      console/log("Error Occured:",err);
+      console.log("Error Occured:",err);
       parsedAnswer = { rawText: reply.trim() };
     }
     res.json({
