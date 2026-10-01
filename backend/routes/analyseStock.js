@@ -7,10 +7,11 @@ import {
 } from "../vectordb/faissStore.js";
 import { getCompanyProfile } from "../services/companyProfileService.js";
 import { getAnalytics } from "../services/analyticsService.js";
-import verifyToken from "../middleware/verifyToken.js";
+import { getPriceHistory1Y } from "../services/priceHistoryService.js";
+import { logAudit } from "../lib/audit.js";
 
 const router = express.Router();
-router.get("/news", verifyToken, async (req, res) => {
+router.get("/news", async (req, res) => {
 
   try {
     const { query } = req.query;
@@ -20,8 +21,9 @@ router.get("/news", verifyToken, async (req, res) => {
     }
     console.log("Fetching The news from News ApI")
     const articles = await fetchStockNews(query);
+    logAudit(null, "news-search", query);
 
-    // const cleanResponse = articles.map((a, i) => 
+    // const cleanResponse = articles.map((a, i) =>
     //   `News ${i + 1}:\nTitle: ${a.title}\nSource: ${a.source} \n ImageUrl:${a.imageUrl}\n Date: ${a.datetime}\n
     // Description: ${a.description || "None"}\nURL: ${a.url}`
     // ).join("\n\n");
@@ -32,7 +34,7 @@ router.get("/news", verifyToken, async (req, res) => {
   }
 });
 
-router.post("/analyze-stock", verifyToken, async (req, res) => {
+router.post("/analyze-stock", async (req, res) => {
 
   try {
     const { query,prompt } = req.body;
@@ -58,12 +60,12 @@ router.post("/analyze-stock", verifyToken, async (req, res) => {
       .join("\n\n");
 
       const finalPrompt = `
-        You are a stock market assistant.
+        You are a stock market assistant that explains things to complete beginners.
 
         Use the following news context to answer the question.
         Here I have given the Specific company Profile and also Given the company
         Analytics Documnet Which Contains 1 year worth of daily price analytics
-       profile ${JSON.stringify(profile,null,2)} 
+       profile ${JSON.stringify(profile,null,2)}
        Analytics: ${JSON.stringify(analytics,null,2)}
 
         Context:
@@ -72,13 +74,16 @@ router.post("/analyze-stock", verifyToken, async (req, res) => {
         Question:
         ${prompt}
 
-       Answer in the Format that is adviced 
-       Companies Profile: Tell here about the companies overall profile and what it does,
-       Analytics: Brefiely Describe the companies analytics and display the analytics in JSON fromat
-       note: Important reply in JSON format, 
-       Answer: reply to the users question with the data given compute a analytics like an 
-       experienced Stock market analyst
-       Mandatory Reply for all in JSON Format ---> Important
+       Respond with ONLY valid JSON, no markdown, in exactly this shape:
+       {
+         "CompaniesProfile": "2-3 plain-English sentences about what the company does",
+         "Analytics": { "description": "1-2 plain-English sentences summarizing the numbers", "data": <the Analytics object given above, unchanged> },
+         "Answer": ["short bullet point 1", "short bullet point 2", "..."]
+       }
+       Rules for "Answer": 4 to 6 bullet points, each ONE short plain-English sentence a
+       beginner with no finance background can understand immediately — no jargon like
+       "volatility" or "trend" without explaining it in the same sentence. Base it on the
+       question, the analytics, and the news context above.
         `;
 
     const reply = await askGroq(finalPrompt);
@@ -100,8 +105,15 @@ router.post("/analyze-stock", verifyToken, async (req, res) => {
       console.log("Error Occured:",err);
       parsedAnswer = { rawText: reply.trim() };
     }
+
+    logAudit(null, "analyze-stock", `${query}: ${prompt}`);
+
+    const priceData = await getPriceHistory1Y(query);
+    const priceHistory = priceData.prices.map(p => ({ date: p.date, close: Number(p.close) }));
+
     res.json({
       parsedAnswer,
+      priceHistory,
     });
   } catch (err) {
     console.error("Groq error:", err.message);

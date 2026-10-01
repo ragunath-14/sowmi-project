@@ -1,40 +1,42 @@
 import React from 'react'
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios'
 import './Home.css';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../../context/StoreContext';
 const Home = () => {
-  const { backendUrl, token } = useStore();
+  const { backendUrl, token, isAdmin, setToken } = useStore();
   const [username,setUsername]=React.useState('');
   const [email,setEmail]=React.useState('');
-  const navigate=useNavigate();
+  const navigate = useNavigate();
+  // The app is public — Home works without logging in. If a token exists we
+  // just use it to greet the user by name; if not, the page still renders.
+  // A 401 here is handled globally by sessionManager.js (clears the stale
+  // token and redirects to /login), so this catch just needs to not crash.
   const fetchUsers=async()=>{
+    if(!token){
+      return;
+    }
     try{
-      if(!token){
-        navigate('/login');
-        return ;
-      }
       const response= await axios.get(`${backendUrl}/auth/home`,{
         headers: { 'Authorization': `Bearer ${token}` }
       })
-      if(response.status !==200){
-        navigate('/login')
-      }
-      else{
+      if(response.status ===200){
         setEmail(response.data.email);
         setUsername(response.data.username)
       }
     }
     catch(err){
       console.log(err);
-      navigate('/login');
     }
   }
   useEffect(()=>{
       fetchUsers();
     },[])
+  const handleLogout = () => {
+    setToken('');
+    navigate('/login');
+  }
   return (
    <div className="home-wrapper">
       {/* Full-Screen Background Image */}
@@ -79,6 +81,26 @@ const Home = () => {
                             <li className="nav-item">
                               <Link className="nav-link nav-hover active" to="/analyze">Analyse Stock</Link>
                             </li>
+                            {isAdmin && (
+                              <li className="nav-item">
+                                <Link className="nav-link nav-hover" to="/admin/audit-log">Admin</Link>
+                              </li>
+                            )}
+                            {!token && (
+                              <li className="nav-item">
+                                <Link className="nav-link nav-hover" to="/login">Login</Link>
+                              </li>
+                            )}
+                            {token && username && (
+                              <li className="nav-item">
+                                <span className="nav-link text-white-50">Hi, {username}</span>
+                              </li>
+                            )}
+                            {token && (
+                              <li className="nav-item">
+                                <button type="button" className="btn btn-sm btn-outline-light" onClick={handleLogout}>Logout</button>
+                              </li>
+                            )}
                           </ul>
                         </div>
                       </div>

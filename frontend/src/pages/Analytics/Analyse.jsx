@@ -1,10 +1,16 @@
 import React from 'react'
-import { Link} from 'react-router-dom';
+import { Link, useNavigate} from 'react-router-dom';
 import axios from 'axios'
 import './analytics.css';
 import { useStore } from '../../context/StoreContext';
+import PriceChart from './PriceChart';
 const Analyse = () => {
-  const { backendUrl, token } = useStore();
+  const { backendUrl, token, isAdmin, setToken } = useStore();
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    setToken('');
+    navigate('/login');
+  }
   const [userQuestion,setUserQuestion]=React.useState({
     query:'',
     prompt:''
@@ -14,6 +20,7 @@ const Analyse = () => {
   const [analytics,setAnalytics]=React.useState({});
   const [errors,setErrors] =React.useState('');
   const [answer,setAnswer]=React.useState({});
+  const [priceHistory,setPriceHistory]=React.useState([]);
   const [isLoading, setIsLoading] = React.useState(false);
 
 
@@ -90,6 +97,7 @@ const Analyse = () => {
               );
               setAnalytics(parsed.Analytics || {});
               setAnswer(parsed.Answer || {});
+              setPriceHistory(response.data.priceHistory || []);
             }
           } catch (err) {
             setErrors("Something went wrong");
@@ -136,6 +144,21 @@ const Analyse = () => {
                 <li className="nav-item">
                   <Link className="nav-link nav-hover active" to="/analyze">Analyse Stock</Link>
                 </li>
+                {isAdmin && (
+                  <li className="nav-item">
+                    <Link className="nav-link nav-hover" to="/admin/audit-log">Admin</Link>
+                  </li>
+                )}
+                {!token && (
+                  <li className="nav-item">
+                    <Link className="nav-link nav-hover" to="/login">Login</Link>
+                  </li>
+                )}
+                {token && (
+                  <li className="nav-item">
+                    <button type="button" className="btn btn-sm btn-outline-light" onClick={handleLogout}>Logout</button>
+                  </li>
+                )}
               </ul>
             </div>
           </div>
@@ -267,6 +290,9 @@ const Analyse = () => {
         </div>
       </div>
 
+      {/* Price Chart */}
+      <PriceChart data={priceHistory} symbol={userQuestion.query} />
+
       {/* Analytics */}
       <div className="card shadow-sm mb-4">
         <div className="card-header fw-bold">Analytics</div>
@@ -284,8 +310,16 @@ const Analyse = () => {
           {answer && typeof answer !== "object" && (
             <p className="mb-0">{String(answer)}</p>
           )}
+          {Array.isArray(answer) && answer.length > 0 && (
+            <ul className="mb-0 ps-3">
+              {answer.map((point, i) => (
+                <li key={i} className="mb-2">{String(point)}</li>
+              ))}
+            </ul>
+          )}
           {answer &&
             typeof answer === "object" &&
+            !Array.isArray(answer) &&
             Object.entries(answer).map(([key, value]) => {
               if (typeof value === "object" && value !== null) {
                 return (

@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { connectToDatabase } from '../../lib/pgDB.js';
 import verifyToken from '../../middleware/verifyToken.js';
+import { logAudit } from '../../lib/audit.js';
 
 const router = express.Router();
 
@@ -30,6 +31,8 @@ router.post('/signin', async (req, res) => {
              values ($1,$2,$3,$4)`,
             [email, username, hashPassword, number]
         );
+
+        await logAudit(email, "signup", username);
 
         return res.status(201).json({
             message: "Account Created Successfully"
@@ -67,12 +70,14 @@ router.post('/login', async (req, res) => {
         }
 
         const token = jwt.sign(
-            { id: user.id },
+            { id: user.id, isAdmin: user.is_admin === true },
             process.env.JWT_KEY,
             { expiresIn: '1h' }
         );
 
-        return res.status(200).json({ token });
+        await logAudit(email, "login", null);
+
+        return res.status(200).json({ token, isAdmin: user.is_admin === true });
 
     } catch (err) {
         console.log(err);

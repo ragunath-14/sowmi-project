@@ -4,6 +4,7 @@ import express from "express";
 import cors from "cors";
 import analyseStock from './routes/analyseStock.js';
 import authRouter from './routes/auth/authRouter.js'
+import adminRouter from './routes/admin/adminRouter.js'
 import { startCronJobs } from './cron.js';
 
 const app = express();
@@ -14,6 +15,7 @@ startCronJobs();
 
 app.use('/analyze',analyseStock);
 app.use('/auth',authRouter)
+app.use('/admin',adminRouter)
 app.get('/test',(req,res)=>{
   res.json({message:"Reached the "})
 })

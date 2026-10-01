@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 
 const Login = () => {
-  const { backendUrl, setToken } = useStore();
+  const { backendUrl, setToken, setIsAdmin } = useStore();
   const [error,setError]=React.useState({});
   const [serverError,setServerError]=React.useState('');
         
@@ -50,6 +50,7 @@ const Login = () => {
                 const response= await axios.post(`${backendUrl}/auth/login`,users);
                 if(response.status==200){
                   setToken(response.data.token);  // saves to context + localStorage
+                  setIsAdmin(response.data.isAdmin);
                   navigate('/home');
               }
             }

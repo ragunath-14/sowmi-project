@@ -21,14 +21,31 @@ export const StoreProvider = ({ children }) => {
       localStorage.setItem("jsonToken", newToken);
     } else {
       localStorage.removeItem("jsonToken");
+      setIsAdminState(false);
+      localStorage.removeItem("isAdmin");
     }
     setTokenState(newToken);
+  };
+
+  // Whether the logged-in account is an admin — set at login, read by the Admin nav link.
+  const [isAdmin, setIsAdminState] = useState(
+    () => localStorage.getItem("isAdmin") === "true"
+  );
+  const setIsAdmin = (value) => {
+    if (value) {
+      localStorage.setItem("isAdmin", "true");
+    } else {
+      localStorage.removeItem("isAdmin");
+    }
+    setIsAdminState(!!value);
   };
 
   const value = {
     backendUrl,
     token,
     setToken,
+    isAdmin,
+    setIsAdmin,
   };
 
   return (

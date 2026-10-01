@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./News.css";
 import axios from 'axios'
 import React from 'react'
@@ -6,7 +6,12 @@ import NewsList from "./NewsList";
 import { useStore } from '../../context/StoreContext';
 
 export default function Navbar({ username = "User" }) {
-  const { backendUrl, token } = useStore();
+  const { backendUrl, token, isAdmin, setToken } = useStore();
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    setToken('');
+    navigate('/login');
+  }
   const [query,setQuery] =React.useState('');
   const [loading,setLoading] =React.useState(true);
   const [error,setError]=React.useState('');
@@ -79,6 +84,21 @@ export default function Navbar({ username = "User" }) {
                     <li className="nav-item">
                       <Link className="nav-link nav-hover active" to="/analyze">Analyse Stock</Link>
                     </li>
+                    {isAdmin && (
+                      <li className="nav-item">
+                        <Link className="nav-link nav-hover" to="/admin/audit-log">Admin</Link>
+                      </li>
+                    )}
+                    {!token && (
+                      <li className="nav-item">
+                        <Link className="nav-link nav-hover" to="/login">Login</Link>
+                      </li>
+                    )}
+                    {token && (
+                      <li className="nav-item">
+                        <button type="button" className="btn btn-sm btn-outline-light" onClick={handleLogout}>Logout</button>
+                      </li>
+                    )}
                   </ul>
                 </div>
               </div>
